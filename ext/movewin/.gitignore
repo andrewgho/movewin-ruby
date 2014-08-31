@@ -1,4 +1,5 @@
 Makefile
+mkmf.log
 movewin_ext.bundle
 movewin_ext.o
 winutils.o
