@@ -23,12 +23,14 @@ To build and use from this repository, without installing:
 
 To list open windows, their locations, and sizes:
 
-    $ ruby -e 'MoveWin.windows.each { |w| puts "%s - %s - %s %s" %
+    $ ruby -rubygems -e 'require "movewin";
+        MoveWin.windows.each { |w| puts "%s - %s - %s %s" %
         [w.app_name, w.title, "%d %d" % w.position, "%d %d" % w.size] }'
 
 To move a window from to the upper left corner:
 
-    $ ruby -e 'MoveWin.windows.first.move!(0, 0)'
+    $ ruby -rubygems -e 'require "movewin";
+        MoveWin.windows.first.move!(0, 0)'
 
 Listing and moving windows requires accessibility access to be enabled.
 
@@ -38,6 +40,42 @@ Description
 This Ruby gem lists and moves OS X desktop windows using the OS X Quartz
 window functions and accessibility APIs.
 
+### Methods
+
+To return true or false, signifying whether the current process is
+authorized to use OS X accessibility APIs:
+
+    abort 'not authorized to use accessibility APIs' unless MoveWin.authorized?
+
+To get the dimensions of the current display:
+
+    width, height = MoveWin.display_size
+
+To get an array of `MoveWin::Window` objects:
+
+    windows = MoveWin.windows
+
+`MoveWin::Window` objects have an application name (like `iTerm2` or
+`FireFox`) and a window title (like `Default` or
+`andrewgho/movewin-ruby`), and can be queried for position, size, or
+both:
+
+    w = windows.first
+    app_name = window.app_name
+    title = window.title
+    x, y = window.position
+    width, height = window.size
+    x, y, width, height = window.bounds
+
+Windows can be moved, resized, or moved and resized in a single call:
+
+    w.move!(new_x, new_y)
+    w.position = [new_x, new_y]
+    w.resize!(new_width, new_height)
+    w.size = [new_width, new_height]
+    w.set_bounds!(new_x, new_y, new_width, new_height)
+    w.bounds = [new_x, new_y, new_width, new_height]
+
 ### Enabling Accessibility Access
 
 The `movewin` program requires the "Enable access for assistive devices"
@@ -45,6 +83,18 @@ setting to be enabled in the "Accessibility" System Preferences pane in
 OS X pre-Mavericks. To enable assistive UI scripting in Mavericks, see
 this Apple KB article:
 [http://support.apple.com/kb/HT5914](http://support.apple.com/kb/HT5914)
+
+### See Also
+
+The source code for this Ruby gem can be found on GitHub:
+
+* https://github.com/andrewgho/movewin-ruby
+
+The source code for for the winutils library (files `winutils.h` and
+`winutils.c`) are duplicated from the `movewin` repository, which
+includes command line tools for listing and moving windows:
+
+* https://github.com/andrewgho/movewin
 
 Author
 ------
