@@ -36,8 +36,24 @@
 require 'movewin/movewin_ext'
 
 module MoveWin
-  VERSION = '1.0'
+  VERSION = '1.1'
+
+  # Individual accessors for display size components
+  def self.display_width;  MoveWin.display_size[0]; end
+  def self.display_height; MoveWin.display_size[1]; end
+
   class Window
+    # Individual accessors and mutators for window position and size components
+    def x; self.position[0]; end
+    def y; self.position[1]; end
+    def width;  self.size[0]; end
+    def height; self.size[1]; end
+    def x=(x); self.move!(x, self.position[1]); end
+    def y=(y); self.move!(self.position[0], y); end
+    def width=(width);   self.resize!(width, self.size[1]);  end
+    def height=(height); self.resize!(self[0], height); end
+
+    # Combined accessor and mutator for all window bounds together
     def bounds
       self.position + self.size
     end

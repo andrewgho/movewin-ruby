@@ -14,7 +14,7 @@ To install from RubyGems.org:
 To install from this repository:
 
     $ gem build movewin.gemspec
-    $ gem install movewin-1.0.gem
+    $ gem install movewin-1.1.gem
 
 To build and use from this repository, without installing:
 
@@ -24,8 +24,8 @@ To build and use from this repository, without installing:
 To list open windows, their locations, and sizes:
 
     $ ruby -rubygems -e 'require "movewin";
-        MoveWin.windows.each { |w| puts "%s - %s - %s %s" %
-        [w.app_name, w.title, "%d %d" % w.position, "%d %d" % w.size] }'
+        puts MoveWin.windows.collect { |w| "%s - %s - %d %d %d %d" %
+        [w.app_name, w.title, w.position, w.size].flatten }'
 
 To move a window from to the upper left corner:
 
@@ -50,22 +50,32 @@ authorized to use OS X accessibility APIs:
 To get the dimensions of the current display:
 
     width, height = MoveWin.display_size
+    width = MoveWin.display_width
+    height = MoveWin.display_height
 
 To get an array of `MoveWin::Window` objects:
 
     windows = MoveWin.windows
+    w = windows.first
 
-`MoveWin::Window` objects have an application name (like `iTerm2` or
-`FireFox`) and a window title (like `Default` or
+`MoveWin::Window` objects have an application name (like `iTerm` or
+`Firefox`) and a window title (like `Default` or
 `andrewgho/movewin-ruby`), and can be queried for position, size, or
 both:
 
-    w = windows.first
     app_name = window.app_name
     title = window.title
     x, y = window.position
     width, height = window.size
     x, y, width, height = window.bounds
+
+There are also convenience functions for if you just need a single
+coordinate or dimension for a window:
+
+    x = window.x
+    y = window.y
+    width = window.width
+    height = window.height
 
 Windows can be moved, resized, or moved and resized in a single call:
 
@@ -75,6 +85,10 @@ Windows can be moved, resized, or moved and resized in a single call:
     w.size = [new_width, new_height]
     w.set_bounds!(new_x, new_y, new_width, new_height)
     w.bounds = [new_x, new_y, new_width, new_height]
+    w.x = new_x
+    w.y = new_y
+    w.width = new_width
+    w.height = new_height
 
 ### Enabling Accessibility Access
 

@@ -35,7 +35,7 @@
 
 Gem::Specification.new do |s|
   s.name        = 'movewin'
-  s.version     = '1.0'
+  s.version     = '1.1'
   s.summary     = 'List and move OS X windows from Ruby'
   s.description =
     'List and move OS X windows from Ruby via the OS X accessibility APIs.'
