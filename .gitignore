@@ -1,1 +1,2 @@
 movewin-*.gem
+!releases/movewin-*.gem
