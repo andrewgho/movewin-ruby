@@ -67,6 +67,10 @@ void StoreWindows(CFDictionaryRef cgWindow, void *rb_ary_ptr);
 /* Callback for Data_Wrap_Struct(), frees internal refs with CFRelease() */
 void MW_Window_destroy(void *ref);
 
+/* Check if VALUE is number or has to_i() method; get number as integer */
+static bool canGetNumber(VALUE v);
+static int getNumber(VALUE v);
+
 /* Copy contents of a CFStringRef into a Ruby string */
 static VALUE convertStringRef(CFStringRef str);
 
@@ -188,11 +192,11 @@ VALUE MW_Window_set_position(VALUE self, VALUE args) {
         args = rb_ary_entry(args, 0);
     }
     if( RARRAY_LEN(args) == 2 &&
-        TYPE(rb_ary_entry(args, 0)) == T_FIXNUM &&
-        TYPE(rb_ary_entry(args, 1)) == T_FIXNUM )
+        canGetNumber(rb_ary_entry(args, 0)) &&
+        canGetNumber(rb_ary_entry(args, 1)) )
     {
-        position.x = NUM2INT(rb_ary_entry(args, 0));
-        position.y = NUM2INT(rb_ary_entry(args, 1));
+        position.x = getNumber(rb_ary_entry(args, 0));
+        position.y = getNumber(rb_ary_entry(args, 1));
     } else {
         rb_raise(rb_eArgError, "wrong number of arguments");
     }
@@ -211,11 +215,11 @@ VALUE MW_Window_set_size(VALUE self, VALUE args) {
         args = rb_ary_entry(args, 0);
     }
     if( RARRAY_LEN(args) == 2 &&
-        TYPE(rb_ary_entry(args, 0)) == T_FIXNUM &&
-        TYPE(rb_ary_entry(args, 1)) == T_FIXNUM )
+        canGetNumber(rb_ary_entry(args, 0)) &&
+        canGetNumber(rb_ary_entry(args, 1)) )
     {
-        size.width = NUM2INT(rb_ary_entry(args, 0));
-        size.height = NUM2INT(rb_ary_entry(args, 1));
+        size.width = getNumber(rb_ary_entry(args, 0));
+        size.height = getNumber(rb_ary_entry(args, 1));
     } else {
         rb_raise(rb_eArgError, "wrong number of arguments");
     }
@@ -271,6 +275,28 @@ void MW_Window_destroy(void *ref) {
     if(mwWindow->cgWindow) CFRelease(mwWindow->cgWindow);
     if(mwWindow->axWindow) CFRelease(mwWindow->axWindow);
     free(mwWindow);
+}
+
+/* Return true if a VALUE is a number, or has a to_i() method */
+static bool canGetNumber(VALUE v) {
+    ID rb_respond_to = rb_intern("respond_to?");
+    ID rb_to_i = rb_intern("to_i");
+
+    return TYPE(v) == T_FIXNUM ||
+           rb_funcall(v, rb_respond_to, 1, ID2SYM(rb_to_i)) == Qtrue;
+}
+
+/* Return an integer for a VALUE, calling to_i() first if needed */
+static int getNumber(VALUE v) {
+    ID rb_to_i = rb_intern("to_i");
+
+    if(TYPE(v) == T_FIXNUM) {
+        return NUM2INT(v);
+    } else if(canGetNumber(v)) {
+        return NUM2INT(rb_funcall(v, rb_to_i, 0));
+    } else {
+        return 0;
+    }
 }
 
 /* Given a CFStringRef, copy its contents into a Ruby string */
