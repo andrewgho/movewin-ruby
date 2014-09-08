@@ -94,6 +94,7 @@ int EnumerateWindows(
         if(windowName) free(windowName);
         if(appName) free(appName);
     }
+    CFRelease(windowList);
     if(subPattern != pattern) free(subPattern);
 
     return count;
@@ -219,6 +220,7 @@ AXUIElementRef AXWindowFromCGWindow(CFDictionaryRef window, int minIdx) {
             matchIdx++;
         }
     }
+    CFRelease(app);
 
     return foundAppWindow;
 }
