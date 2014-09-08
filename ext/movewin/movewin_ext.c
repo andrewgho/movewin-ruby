@@ -253,7 +253,8 @@ void StoreWindows(CFDictionaryRef cgWindow, void *rb_ary_ptr) {
          axWindow = AXWindowFromCGWindow(cgWindow, i);
          if(!axWindow) break;
          mwWindow = (MW_Window *)malloc(sizeof(MW_Window));
-         mwWindow->cgWindow = cgWindow;
+         mwWindow->cgWindow =
+             CFDictionaryCreateCopy(kCFAllocatorDefault, cgWindow);
          mwWindow->axWindow = axWindow;
          wrappedMwWindow = Data_Wrap_Struct(
              MW_WindowClass, NULL, MW_Window_destroy, (void *)mwWindow
