@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+DIRNAME = File.dirname(__FILE__);
+if File.exists?("#{DIRNAME}/lib/movewin.rb") && File.directory("#{DIRNAME}/ext")
+  $LOAD_PATH.unshift('lib', 'ext')
+else
+  require 'rubygems'
+end
+
+require 'movewin'
+
+ME = File.basename($0)
+abort "#{ME}: not authorized to use accessibility API" if !MoveWin.authorized?
+
+pattern = ARGV.first
+MoveWin.windows.each do |window|
+  title = "#{window.app_name} - #{window.title}"
+  label = "#{title} - #{(window.position + window.size) * ' '}"
+  puts label if pattern.nil? || label.match(pattern) || title.match(pattern)
+end

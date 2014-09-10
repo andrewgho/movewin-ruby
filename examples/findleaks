@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+
+DIRNAME = File.dirname(__FILE__);
+if File.exists?("#{DIRNAME}/lib/movewin.rb") && File.directory("#{DIRNAME}/ext")
+  $LOAD_PATH.unshift('lib', 'ext')
+else
+  require 'rubygems'
+end
+
+require 'movewin'
+
+class MemTracker
+  def initialize
+    @vsz = nil
+    @rss = nil
+  end
+  def refresh!
+    output = `ps auxw | grep '#{$0}$' | grep -v grep | awk '{ print $5, $6 }'`
+    vsz, rss = output.chomp.split(' ').collect { |s| s.to_i }
+    if @vsz.nil? || @rss.nil?
+      puts "#{vsz} #{rss}"
+    elsif vsz != @vsz || rss != @rss
+      puts "#{vsz} #{rss} (#{addplus(vsz - @vsz)} #{addplus(rss - @rss)})"
+    end
+    @vsz = vsz
+    @rss = rss
+  end
+  private
+  def addplus(n)
+    n > 0 ? "+#{n}" : "#{n}"
+  end
+end
+
+RUNS = 1024
+TICKS = 60
+SHOW_EVERY = (RUNS / TICKS).to_i
+
+m = MemTracker.new
+m.refresh!
+i = 0
+while i < RUNS
+  windows = MoveWin.windows
+  windows = nil
+  if i == 0
+    m.refresh!
+    $stderr.puts "#{RUNS} runs, #{SHOW_EVERY} runs/tick"
+    $stderr.print 'Progress: ['
+    0.upto(RUNS - 1) { |j| $stderr.print '-' if j % SHOW_EVERY == 0 }
+    $stderr.print "]\rProgress: ["
+  end
+  $stderr.print '*' if i % SHOW_EVERY == 0
+  i += 1
+end
+$stderr.puts ']'
+m.refresh!
+
+exit 0
