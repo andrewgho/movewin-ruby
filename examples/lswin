@@ -1,20 +1,54 @@
 #!/usr/bin/env ruby
 
+# Load local development directories, if it looks like we are in a repository
 DIRNAME = File.dirname(__FILE__);
-if File.exists?("#{DIRNAME}/lib/movewin.rb") && File.directory("#{DIRNAME}/ext")
-  $LOAD_PATH.unshift('lib', 'ext')
+if File.exists?("#{DIRNAME}/../lib/movewin.rb") &&
+   File.directory?("#{DIRNAME}/../ext/movewin")
+then
+  $LOAD_PATH.unshift("#{DIRNAME}/../lib", "#{DIRNAME}/../ext")
 else
   require 'rubygems'
 end
 
+require 'optparse'
 require 'movewin'
 
 ME = File.basename($0)
-abort "#{ME}: not authorized to use accessibility API" if !MoveWin.authorized?
+USAGE = "usage: #{ME} [-h] [-l] [-i id] [title]\n"
+FULL_USAGE = USAGE + <<'end'
+    -h       display this help text and exit
+    -l       long display, include window ID column in output
+    -i id    show only windows with this window ID (-1 for all)
+    title    pattern to match "Applicadtion - Title" against
+end
 
+# Parse command line options
+long = false
+id = -1
+OptionParser.new do |opts|
+  opts.on('-h', '--help')    { puts FULL_USAGE; exit 0 }
+  opts.on('-l', '--verbose') { long = true }
+  opts.on('-i ID')           { |s| id = s.to_i }
+  begin
+    opts.parse!(ARGV)
+  rescue OptionParser::InvalidOption => e
+    abort "#{ME}: #{e}\n#{USAGE}"
+  end
+end
 pattern = ARGV.first
+
+# Search for matching windows, and print them out
+count = 0
 MoveWin.windows.each do |window|
   title = "#{window.app_name} - #{window.title}"
   label = "#{title} - #{(window.position + window.size) * ' '}"
-  puts label if pattern.nil? || label.match(pattern) || title.match(pattern)
+  label = "#{window.id} - #{label}" if long
+  if (id == -1 || window.id == id) &&
+     (pattern.nil? || label.match(pattern) || title.match(pattern))
+  then
+    puts label
+    count += 1
+  end
 end
+
+exit (count > 0 || (pattern.nil? && id == -1)) ? 0 : 1

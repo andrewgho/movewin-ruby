@@ -1,28 +1,65 @@
 #!/usr/bin/env ruby
 
+# Load local development directories, if it looks like we are in a repository
 DIRNAME = File.dirname(__FILE__);
-if File.exists?("#{DIRNAME}/lib/movewin.rb") && File.directory("#{DIRNAME}/ext")
-  $LOAD_PATH.unshift('lib', 'ext')
+if File.exists?("#{DIRNAME}/../lib/movewin.rb") &&
+   File.directory?("#{DIRNAME}/../ext/movewin")
+then
+  $LOAD_PATH.unshift("#{DIRNAME}/../lib", "#{DIRNAME}/../ext")
 else
   require 'rubygems'
 end
 
+require 'optparse'
 require 'movewin'
 
 ME = File.basename($0)
-abort "#{ME}: not authorized to use accessibility API" if !MoveWin.authorized?
-
-pattern, x, y, width, height = ARGV
-unless pattern && x && y
-  abort "#{ME}: missing required title and position arguments"
+USAGE = "usage: #{ME} movewin [-h] [-i id | title] x y [width height]\n"
+FULL_USAGE = USAGE + <<'end'
+    -h            display this help text and exit
+    -i id         window ID to move (one of title or ID is required)
+    title         pattern to match "Application - Title" against
+    x y           required, position to move window to
+    width height  optional, new size to resize window to
 end
 
+# Parse command line options
+id = -1
+OptionParser.new do |opts|
+  opts.on('-h', '--help') { puts FULL_USAGE; exit 0 }
+  opts.on('-i ID')        { |s| id = s.to_i }
+  begin
+    opts.parse!(ARGV)
+  rescue OptionParser::InvalidOption => e
+    abort "#{ME}: #{e}\n#{USAGE}"
+  end
+end
+if id == -1
+  pattern = ARGV.shift
+  abort "#{ME}: missing required window title" unless pattern
+else
+  pattern = nil
+end
+x, y, width, height = ARGV
+if !(x && y)
+  abort "#{ME}: missing required window x and y coordinates"
+elsif width && !height
+  abort "#{ME}: height is required if width is present"
+end
+
+# Search for matching window, store it
 window = MoveWin.windows.detect do |window|
   title = "#{window.app_name} - #{window.title}"
   label = "#{title} - #{(window.position + window.size) * ' '}"
-  label.match(pattern) || title.match(pattern)
+  (id == -1 || window.id == id) &&
+    (pattern.nil? || label.match(pattern) || title.match(pattern))
 end
 
+# If we got a matching window, move it
 if window
+  abort "#{ME}: not authorized to use accessibility API" if !MoveWin.authorized?
   window.move!(x.to_i, y)
+  exit 0
+else
+  exit 1
 end
