@@ -47,6 +47,7 @@ void Init_movewin_ext();
 VALUE MW_is_authorized(VALUE module);   /* MoveWin.authorized? */
 VALUE MW_display_size(VALUE module);    /* MoveWin.display_size */
 VALUE MW_windows(VALUE module);         /* MoveWin.windows */
+VALUE MW_Window_id(VALUE self);         /* MoveWin::Window.id */
 VALUE MW_Window_app_name(VALUE self);   /* MoveWin::Window.app_name */
 VALUE MW_Window_title(VALUE self);      /* MoveWin::Window.title */
 VALUE MW_Window_position(VALUE self);   /* MoveWin::Window.position */
@@ -91,6 +92,7 @@ void Init_movewin_ext() {
 
     /* Define class MoveWin::Window and its methods */
     MW_WindowClass = rb_define_class_under(MW_Module, "Window", rb_cObject);
+    rb_define_method(MW_WindowClass, "id",        MW_Window_id,            0);
     rb_define_method(MW_WindowClass, "app_name",  MW_Window_app_name,      0);
     rb_define_method(MW_WindowClass, "title",     MW_Window_title,         0);
     rb_define_method(MW_WindowClass, "position",  MW_Window_position,      0);
@@ -125,6 +127,19 @@ VALUE MW_windows(VALUE module) {
     VALUE retval = rb_ary_new();
     EnumerateWindows(NULL, StoreWindows, (void *)retval);
     return retval;
+}
+
+/* Return window ID a MoveWin::Window as an integer (nil for unknown) */
+VALUE MW_Window_id(VALUE self) {
+    void *mwWindow;
+    int windowId;
+
+    Data_Get_Struct(self, MW_Window, mwWindow);
+    windowId = CFDictionaryGetInt(
+        ((MW_Window *)mwWindow)->cgWindow, kCGWindowNumber
+    );
+
+    return INT2NUM(windowId);
 }
 
 /* Return application name (owner) of a MoveWin::Window as a Ruby string */
@@ -244,28 +259,20 @@ VALUE MW_Window_to_string(VALUE self) {
 
 /* Given window CFDictionaryRef and Ruby array, push MW_Window to array */
 void StoreWindows(CFDictionaryRef cgWindow, void *rb_ary_ptr) {
-    int i;
     AXUIElementRef axWindow;
     MW_Window *mwWindow;
     VALUE wrappedMwWindow;
-    VALUE mwWindows;
+    VALUE mwWindows = (VALUE)rb_ary_ptr;
 
-    mwWindows = (VALUE)rb_ary_ptr;
-
-    i = 0;
-    while(1) {
-         axWindow = AXWindowFromCGWindow(cgWindow, i);
-         if(!axWindow) break;
-         mwWindow = (MW_Window *)malloc(sizeof(MW_Window));
-         mwWindow->cgWindow =
-             CFDictionaryCreateCopy(kCFAllocatorDefault, cgWindow);
-         mwWindow->axWindow = axWindow;
-         wrappedMwWindow = Data_Wrap_Struct(
-             MW_WindowClass, NULL, MW_Window_destroy, (void *)mwWindow
-         );
-         rb_ary_push(mwWindows, wrappedMwWindow);
-         i++;
-    }
+    axWindow = AXWindowFromCGWindow(cgWindow);
+    mwWindow = (MW_Window *)malloc(sizeof(MW_Window));
+    mwWindow->cgWindow =
+        CFDictionaryCreateCopy(kCFAllocatorDefault, cgWindow);
+    mwWindow->axWindow = axWindow;
+    wrappedMwWindow = Data_Wrap_Struct(
+        MW_WindowClass, NULL, MW_Window_destroy, (void *)mwWindow
+    );
+    rb_ary_push(mwWindows, wrappedMwWindow);
 }
 
 /* Free up MW_Window resources, for Ruby finalizer in Data_Wrap_Struct() */
