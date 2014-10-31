@@ -36,7 +36,7 @@
 require 'movewin/movewin_ext'
 
 module MoveWin
-  VERSION = '1.4'
+  VERSION = '1.5'
 
   # Individual accessors for display size components
   def self.display_width;  MoveWin.display_size[0]; end

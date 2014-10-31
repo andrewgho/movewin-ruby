@@ -14,7 +14,7 @@ To install from RubyGems.org:
 To install from this repository:
 
     $ gem build movewin.gemspec
-    $ gem install movewin-1.4.gem
+    $ gem install movewin-1.5.gem
 
 To build and use from this repository, without installing:
 
