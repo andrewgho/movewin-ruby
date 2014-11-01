@@ -35,13 +35,15 @@
 
 Gem::Specification.new do |s|
   s.name        = 'movewin'
-  s.version     = '1.6'
+  s.version     = '1.7'
   s.summary     = 'List and move OS X windows from Ruby'
   s.description =
     'List and move OS X windows from Ruby via the OS X accessibility APIs.'
   s.authors     = ['Andrew Ho']
   s.email       = 'andrew@zeuscat.com'
-  s.files       = Dir['lib/*.rb'] + Dir['ext/movewin/*.[ch]']
+  s.files       = Dir['lib/*.rb'] +
+                  Dir['ext/movewin/*.[ch]'] +
+                  ['ext/movewin/dispatch/empty.rb']
   s.extensions  = %w{ext/movewin/extconf.rb}
   s.homepage    = 'https://github.com/andrewgho/movewin-ruby'
   s.license     = 'BSD-3-Clause'
