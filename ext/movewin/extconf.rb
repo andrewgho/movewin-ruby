@@ -7,12 +7,7 @@ def main(argv = [])
   $CFLAGS = '-Wall'
   $LDFLAGS = '-Wall -framework Carbon'
 
-  # No have_framework() in mkmf that ships with Ruby versions earlier than 1.9
-  if ruby_older_than?('1.9')
-    have_header('Carbon/Carbon.h')
-  else
-    have_framework('Carbon')
-  end
+  have_header('Carbon/Carbon.h')
 
   # On Yosemite or newer, fix bug in Carbon header that breaks under gcc
   if yosemite_or_newer? && using_gcc?
@@ -20,11 +15,6 @@ def main(argv = [])
   end
 
   create_makefile('movewin/movewin_ext')
-end
-
-# Return true if current Ruby version is older than given version
-def ruby_older_than?(version)
-  Gem::Version.new(RUBY_VERSION) < Gem::Version.new(version)
 end
 
 # Return true if this is OS X 10.10 (Yosemite) or newer
@@ -62,7 +52,8 @@ def fix_dispatch_object_header!
       else
         $CFLAGS += " -I#{File.dirname(__FILE__)}"
       end
-      set_constant!(:CLEANINGS, "CLEANFILES += dispatch/object.h\n" + CLEANINGS)
+      set_constant! :CLEANINGS,
+        "DISTCLEANFILES += dispatch/object.h\n" + CLEANINGS
     end
   ensure
     File.unlink(tmpfile) if File.exists?(tmpfile)
