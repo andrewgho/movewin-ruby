@@ -58,7 +58,7 @@ def fix_dispatch_object_header!
         end
         set_constant! :CLEANINGS,
           "DISTCLEANFILES += dispatch/object.h\n" + CLEANINGS
-        status = "patched: #{destfile}"
+        status = "patched #{destfile}"
       else
         status = 'skipped'
       end
@@ -91,19 +91,20 @@ end
 # gcc -Wp,-v -xc /dev/null -fsyntax-only 2>&1
 def header_include_paths
   cmd = RbConfig::MAKEFILE_CONFIG["CC"]
-  args = %w{-Wp -v -xc /dev/null -fsyntax-only}
+  args = %w{-Wp,-v -xc /dev/null -fsyntax-only}
   paths = []
   reading_paths = false
   run_command(cmd, *args) do |line|
+    line.chomp!
     if reading_paths
-      if line.chomp.match(/\A\QEnd of search list.\E\Z/)
+      if line == 'End of search list.'
         reading_paths = false
-      elsif line.match(/\A \//)
+      elsif line.match(/\A /)
         line.strip!
         line.sub!(/\s+\(framework directory\)\Z/, '')
         paths << line
       end
-    elsif line.chomp.match(/\A\Q#include <...> search starts here:\E\Z/)
+    elsif line == '#include <...> search starts here:'
       reading_paths = true
     end
   end
