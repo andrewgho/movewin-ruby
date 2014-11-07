@@ -24,15 +24,15 @@ To build and use from this repository, without installing:
 To list open windows, their locations, and sizes:
 
     $ ruby -rubygems -e 'require "movewin";
-        puts MoveWin.windows.collect { |w| "%s - %s - %d %d %d %d" %
-        [w.app_name, w.title, w.position, w.size].flatten }'
+        MoveWin.windows.each { |w| puts [w, w.bounds * " "] * " - " }'
 
 To move a window from to the upper left corner:
 
     $ ruby -rubygems -e 'require "movewin";
         MoveWin.windows.first.move!(0, 0)'
 
-Listing and moving windows requires accessibility access to be enabled.
+Listing and moving windows requires
+[#enabling-accessibility-access](accessibility access to be enabled).
 
 Description
 -----------
@@ -90,12 +90,15 @@ Windows can be moved, resized, or moved and resized in a single call:
     w.width = new_width
     w.height = new_height
 
+This code has been tested on Ruby 1.8.7 (REE), Ruby 1.9, and Ruby 2.0
+versions, running on OS X Mountain Lion, Mavericks, and Yosemite.
+
 ### Enabling Accessibility Access
 
 The `movewin` program requires the "Enable access for assistive devices"
 setting to be enabled in the "Accessibility" System Preferences pane in
-OS X pre-Mavericks. To enable assistive UI scripting in Mavericks, see
-this Apple KB article:
+OS X pre-Mavericks. To enable assistive UI scripting in Mavericks or
+Yosemite, see this Apple KB article:
 [http://support.apple.com/kb/HT5914](http://support.apple.com/kb/HT5914)
 
 ### See Also
