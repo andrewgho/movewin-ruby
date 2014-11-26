@@ -32,7 +32,7 @@ To move a window from to the upper left corner:
         MoveWin.windows.first.move!(0, 0)'
 
 Listing and moving windows requires
-[#enabling-accessibility-access](accessibility access to be enabled).
+(accessibility access to be enabled)[#enabling-accessibility-access].
 
 Description
 -----------
