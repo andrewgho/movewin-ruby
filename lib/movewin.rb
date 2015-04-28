@@ -2,7 +2,7 @@
 # movewin.rb - Ruby native code that augments movewin_ext Ruby extension
 # Andrew Ho (andrew@zeuscat.com)
 #
-# Copyright (c) 2014, Andrew Ho.
+# Copyright (c) 2014-2015, Andrew Ho.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
