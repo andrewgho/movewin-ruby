@@ -56,6 +56,7 @@ def fix_dispatch_object_header!
         else
           $CFLAGS += " -I#{File.dirname(__FILE__)}"
         end
+        # TODO: Ruby 2.2 mkmf doesn't seem to actually use CLEANINGS any more
         set_constant! :CLEANINGS,
           "DISTCLEANFILES += dispatch/object.h\n" + CLEANINGS
         status = "patched #{destfile}"
@@ -135,12 +136,12 @@ def run_command(cmd, *args)
 end
 
 # Redefine constant without warning (http://stackoverflow.com/q/3375360)
-class Object
-  def set_constant!(const, value)
-    mod = self.is_a?(Module) ? self : self.class
-    mod.send(:remove_const, const) if mod.const_defined?(const)
-    mod.const_set(const, value)
+def set_constant!(const, value)
+  unless Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.0')
+    # Ruby 2.0.0 and newer no longer warn when const_set() redefines constant
+    Object::send(:remove_const, const) if Object::const_defined?(const)
   end
+  Object::send(:const_set, const, value)
 end
 
 # Run main loop and exit
