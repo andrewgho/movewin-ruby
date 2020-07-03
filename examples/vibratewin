@@ -1,8 +1,11 @@
 #!/usr/bin/env ruby
 
+# Load local development directories, if it looks like we are in a repository
 DIRNAME = File.dirname(__FILE__);
-if File.exists?("#{DIRNAME}/lib/movewin.rb") && File.directory("#{DIRNAME}/ext")
-  $LOAD_PATH.unshift('lib', 'ext')
+if File.exists?("#{DIRNAME}/../lib/movewin.rb") &&
+   File.directory?("#{DIRNAME}/../ext/movewin")
+then
+  $LOAD_PATH.unshift("#{DIRNAME}/../lib", "#{DIRNAME}/../ext")
 else
   require 'rubygems'
 end
@@ -11,7 +14,12 @@ require 'movewin'
 
 ME = File.basename($0)
 def die(*msg); abort "#{ME}: #{msg}"; end
-die 'not authorized to use accessibility API' unless MoveWin.authorized?
+unless MoveWin.recording_authorized?
+  die 'not authorized to do screen recording'
+end
+unless MoveWin.accessibility_authorized?
+  die 'not authorized to use accessibility API'
+end
 
 pattern = ARGV.first
 windows = MoveWin.windows

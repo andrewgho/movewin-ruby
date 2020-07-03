@@ -38,6 +38,9 @@ end
 pattern = ARGV.first
 
 # Search for matching windows, and print them out
+unless MoveWin.recording_authorized?
+  abort "#{ME}: not authorized to do screen recording"
+end
 count = 0
 MoveWin.windows.each do |window|
   title = "#{window.app_name} - #{window.title}"

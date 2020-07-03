@@ -2,7 +2,7 @@
  * winutils.c - utility functions for listing and moving windows
  * Andrew Ho (andrew@zeuscat.com)
  *
- * Copyright (c) 2014-2015, Andrew Ho.
+ * Copyright (c) 2014-2020, Andrew Ho.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -186,8 +186,30 @@ CGSize CGWindowGetSize(CFDictionaryRef window) {
     return CGSizeMake(width, height);
 }
 
+/* Return true if and only if we are authorized to do screen recording */
+bool isAuthorizedForScreenRecording() {
+    if (MAC_OS_X_VERSION_MIN_REQUIRED < 101500) {
+        /* OS X prior to Catalina does not require separate permissions */
+        return 1;
+    } else {
+        CGDisplayStreamFrameAvailableHandler handler =
+            ^(CGDisplayStreamFrameStatus status,
+              uint64_t display_time,
+              IOSurfaceRef frame_surface,
+              CGDisplayStreamUpdateRef updateRef) { return; };
+        CGDisplayStreamRef stream =
+            CGDisplayStreamCreate(CGMainDisplayID(), 1, 1, 'BGRA', NULL, handler);
+        if (stream == NULL) {
+            return 0;
+        } else {
+            CFRelease(stream);
+            return 1;
+        }
+    }
+}
+
 /* Return true if and only if we are authorized to call accessibility APIs */
-bool isAuthorized() {
+bool isAuthorizedForAccessibility() {
 #if MAC_OS_X_VERSION_MIN_REQUIRED < 1090
     return AXAPIEnabled() || AXIsProcessTrusted();
 #else

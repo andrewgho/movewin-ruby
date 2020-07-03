@@ -31,8 +31,11 @@ To move a window from to the upper left corner:
     $ ruby -rubygems -e 'require "movewin";
         MoveWin.windows.first.move!(0, 0)'
 
-Listing and moving windows requires
+On OS X Catalina and later, listing and moving windows requires
+[screen recording access to be enabled](#enabling-recording-access).
+On all versions of OS X, moving windows requires
 [accessibility access to be enabled](#enabling-accessibility-access).
+
 
 Description
 -----------
@@ -43,9 +46,12 @@ window functions and accessibility APIs.
 ### Methods
 
 To return true or false, signifying whether the current process is
-authorized to use OS X accessibility APIs:
+authorized to use OS X screen recording or accessibility APIs:
 
-    abort 'not authorized to use accessibility APIs' unless MoveWin.authorized?
+    abort 'not authorized to do screen recording'
+      unless MoveWin.recording_authorized?
+    abort 'not authorized to use accessibility APIs'
+      unless MoveWin.accessibility_authorized?
 
 To get the dimensions of the current display:
 
@@ -91,7 +97,15 @@ Windows can be moved, resized, or moved and resized in a single call:
     w.height = new_height
 
 This code has been tested on Ruby 1.8.7 (REE), Ruby 1.9, and Ruby 2.0
-versions, running on OS X Mountain Lion, Mavericks, and Yosemite.
+versions, running on OS X versions Mountain Lion through Catalina.
+
+### Enabling Recording Access
+
+On OS X Catalina and later, both `lswin` and `movewin` programs require the
+"Screen Recording" setting to be enabled in the "Security & Privacy" System
+Preferences pane. To enable screen recording in Catalina or later, see this
+Apple help center article:
+[https://support.apple.com/guide/mac-help/control-access-to-screen-recording-on-mac-mchld6aa7d23/mac](https://support.apple.com/guide/mac-help/control-access-to-screen-recording-on-mac-mchld6aa7d23/mac)
 
 ### Enabling Accessibility Access
 
@@ -121,7 +135,7 @@ Andrew Ho (<andrew@zeuscat.com>)
 License
 -------
 
-    Copyright (c) 2014-2015, Andrew Ho.
+    Copyright (c) 2014-2020, Andrew Ho.
     All rights reserved.
     
     Redistribution and use in source and binary forms, with or without

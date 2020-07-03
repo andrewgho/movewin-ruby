@@ -2,7 +2,7 @@
  * movewin_ext.c - Ruby extension to list and move OS X windows
  * Andrew Ho (andrew@zeuscat.com)
  *
- * Copyright (c) 2014-2015, Andrew Ho.
+ * Copyright (c) 2014-2020, Andrew Ho.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,10 @@ static VALUE MW_WindowClass;
 void Init_movewin_ext();
 
 /* Ruby method implementations */
-VALUE MW_is_authorized(VALUE module);   /* MoveWin.authorized? */
+VALUE MW_is_recording_authorized(VALUE module);
+                                        /* MoveWin.recording_authorized? */
+VALUE MW_is_accessibility_authorized(VALUE module);
+                                        /* MoveWin.accessibility_authorized? */
 VALUE MW_display_size(VALUE module);    /* MoveWin.display_size */
 VALUE MW_windows(VALUE module);         /* MoveWin.windows */
 VALUE MW_Window_id(VALUE self);         /* MoveWin::Window.id */
@@ -86,7 +89,10 @@ void Init_movewin_ext() {
 
     /* Define module MoveWin and its methods */
     MW_Module = rb_define_module("MoveWin");
-    rb_define_singleton_method(MW_Module, "authorized?",  MW_is_authorized, 0);
+    rb_define_singleton_method(MW_Module, "recording_authorized?",
+                               MW_is_recording_authorized, 0);
+    rb_define_singleton_method(MW_Module, "accessibility_authorized?",
+                               MW_is_accessibility_authorized, 0);
     rb_define_singleton_method(MW_Module, "display_size", MW_display_size,  0);
     rb_define_singleton_method(MW_Module, "windows",      MW_windows,       0);
 
@@ -104,9 +110,14 @@ void Init_movewin_ext() {
     rb_define_method(MW_WindowClass, "to_s",      MW_Window_to_string,     0);
 }
 
+/* Return true if we are authorized to do screen recording */
+VALUE MW_is_recording_authorized(VALUE module) {
+    return isAuthorizedForScreenRecording() ? Qtrue : Qfalse;
+}
+
 /* Return true if we are authorized to use OS X accessibility APIs */
-VALUE MW_is_authorized(VALUE module) {
-    return isAuthorized() ? Qtrue : Qfalse;
+VALUE MW_is_accessibility_authorized(VALUE module) {
+    return isAuthorizedForAccessibility() ? Qtrue : Qfalse;
 }
 
 /* Return dimensions of current main display as an array of two integers */

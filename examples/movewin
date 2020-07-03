@@ -48,6 +48,9 @@ elsif width && !height
 end
 
 # Search for matching window, store it
+unless MoveWin.recording_authorized?
+  abort "#{ME}: not authorized to do screen recording"
+end
 window = MoveWin.windows.detect do |window|
   title = "#{window.app_name} - #{window.title}"
   label = "#{title} - #{(window.position + window.size) * ' '}"
@@ -57,7 +60,9 @@ end
 
 # If we got a matching window, move it
 if window
-  abort "#{ME}: not authorized to use accessibility API" if !MoveWin.authorized?
+  unless MoveWin.accessibility_authorized?
+    abort "#{ME}: not authorized to use accessibility API"
+  end
   window.move!(x.to_i, y)
   exit 0
 else
